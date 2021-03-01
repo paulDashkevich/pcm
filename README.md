@@ -55,5 +55,5 @@ Daemon Status:
   pacemaker: active/enabled
   pcsd: active/enabled
 ```
-![web-ui](pic1.png)
-![web-ui](pic2.png)
+![web-ui](pic1.jpg)
+![web-ui](pic2.jpg)
