@@ -1,0 +1,4 @@
+---
+# tasks file for ansible-pacemaker
+- include: centos7-install.yml
+#- include: reboot.yml

@@ -1,0 +1,15 @@
+---
+cluster_user: "hacluster"
+pcm_password: "123456789"
+password_hash: "GW5V7pXJn+GcW/JzqcFO38+l0kNbYqhk"
+cluster_name: "ha_cluster"
+cluster_firewall: false
+enable_pcsd_gui: 'nochange'
+cluster_transport: 'default'
+allow_cluster_expansion: false
+cluster_net_iface: 'eth1'
+rrp_interface: ''
+cluster_etc_hosts: true
+cluster_hostname_fact: "ansible_hostname"
+cluster_node_is_remote: false
+pacemaker_primary_server: '{{ groups[pacemaker_cluster_group][0] }}'

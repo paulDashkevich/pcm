@@ -1,0 +1,8 @@
+[servers]
+server0 ansible_host=185.177.95.11 ansible_subnet_host=10.1.0.2 ansible_connection=ssh ansible_user=adminroot
+server1 ansible_host=185.177.95.5  ansible_subnet_host=10.1.0.3 ansible_connection=ssh ansible_user=adminroot
+server2 ansible_host=185.177.95.6  ansible_subnet_host=10.1.0.4 ansible_connection=ssh ansible_user=adminroot
+
+[target]
+iscsi ansible_host=185.177.94.248  anible_subnet_host=10.1.0.1  ansible_connection=ssh ansible_user=adminroot
+

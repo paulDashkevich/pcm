@@ -1,0 +1,11 @@
+---
+- name: check os version
+  fail: msg='OS is NOT CentOS 7.x'
+  when: ansible_distribution != 'CentOS' or ansible_distribution_major_version != '7'
+
+- name: install iscsi target
+  yum:  name={{ item }}
+  with_items:
+    - targetcli 
+
+

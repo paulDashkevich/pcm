@@ -1,0 +1,13 @@
+---
+- name: check os version
+  fail: msg='OS is NOT CentOS 7.x'
+  when: ansible_distribution != 'CentOS' or ansible_distribution_major_version != '7'
+
+- name: install iscsi client
+  yum: name={{ item }}
+  with_items:
+    - iscsi-initiator-utils
+    - iscsi-initiator-utils-iscsiuio
+    - gfs2-utils
+    - lvm2-cluster
+    - fence-agents-all

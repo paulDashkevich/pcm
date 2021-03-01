@@ -1,0 +1,9 @@
+---
+# handlers file for iscsi-target
+#- name: start multipath
+#  service:
+#    name: "multipathd"
+#    state: "started"
+#    enabled: yes
+# become: true
+

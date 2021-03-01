@@ -1,0 +1,46 @@
+- hosts: iscsi
+  tags: target
+  become: true
+  roles:
+    - role: iscsi-target
+  tasks:
+    - name: targetcli
+      shell: |
+       targetcli /backstores/block create disk01 /dev/sdb
+       targetcli /iscsi create iqn.2021-02.by.otus:storage.target00
+       targetcli /iscsi/iqn.2021-02.by.otus:storage.target00/tpg1/portals create 0.0.0.0
+       targetcli /iscsi/iqn.2021-02.by.otus:storage.target00/tpg1/luns create /backstores/block/disk01 lun=1 
+       targetcli /iscsi/iqn.2021-02.by.otus:storage.target00/tpg1 set attribute authentication=0
+       targetcli /iscsi/iqn.2021-02.by.otus:storage.target00/tpg1/acls create iqn.2021-02.by.otus:server0
+       targetcli /iscsi/iqn.2021-02.by.otus:storage.target00/tpg1/acls create iqn.2021-02.by.otus:server1
+       targetcli /iscsi/iqn.2021-02.by.otus:storage.target00/tpg1/acls create iqn.2021-02.by.otus:server2
+  ignore_errors: True
+- name: Configure cluster
+  tags: web
+  become: true
+  hosts: servers
+  roles:
+    - sedovandrew.nginx
+    - role: pacemaker
+    - role: iscsi-client
+
+- name: discover iscsi
+  become: true
+  hosts: servers
+  tags: iclient
+
+  tasks: 
+    - name: change iqn
+      lineinfile:
+        path: /etc/iscsi/initiatorname.iscsi
+        regexp: '^InitiatorName=.*'
+        line: 'InitiatorName=iqn.2021-02.by.otus:{{ inventory_hostname }}'
+    - name: iscsiadm
+      shell: |
+        iscsiadm -m discovery -t st -p 10.1.0.1
+        iscsiadm -m node -l -T iqn.2021-02.by.otus:storage.target00
+    - name: iscsid start
+      service:
+        name: iscsid
+        state: started
+

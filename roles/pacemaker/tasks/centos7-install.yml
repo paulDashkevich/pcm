@@ -1,0 +1,63 @@
+---
+- name: check os version
+  fail: msg='OS is NOT CentOS 7.x'
+  when: ansible_distribution != 'CentOS' or ansible_distribution_major_version != '7'
+
+- name: install pacemaker packages
+  yum: name={{ item }}
+  with_items:
+    - pacemaker
+    - pcs
+    - psmisc
+    - policycoreutils-python
+    - libselinux-python
+    - mc
+
+- name: Change the hostname to our standard
+  hostname:
+    name="{{ inventory_hostname }}"
+  when:
+    ansible_fqdn != ansible_host
+
+- name: "Build hosts file"
+  lineinfile: dest=/etc/cloud/templates/hosts.redhat.tmpl regexp='.*{{ item }}$' line="{{ hostvars[item].ansible_subnet_host }} {{item}}" state=present
+  when: hostvars[item].ansible_default_ipv4.address is defined
+  with_items: "{{ groups['servers'] }}"
+
+- name: Set authorized key took from file
+  authorized_key:
+    user: root
+    state: present
+    key: "{{ lookup('file', 'id_rsa.pub') }}"
+
+- name: Copy the private_key
+  copy:
+    src: "id_rsa"
+    dest: /root/.ssh/id_rsa
+
+- name: start pcsd service
+  systemd:
+    name: pcsd
+    state: started
+    enabled: yes
+
+- name: restart machine
+  reboot:
+
+- name: Set password for local hacluster user
+  user:
+   name: "{{ cluster_user }}"
+   password: "{{ pcm_password | string | password_hash('sha512') }}"
+   state: present
+   update_password: always
+   create_home: yes
+  notify: "restart pcsd"
+  no_log: true
+
+- name: pcs auth
+  ansible.builtin.shell: |
+         pcs cluster auth {{ groups['servers']|join(' ') }} -u {{ cluster_user }} -p {{ pcm_password }}
+         pcs cluster setup --name {{ cluster_name }} {{ groups['servers']|join(' ') }}
+         pcs cluster enable --all
+         pcs cluster start --all
+  ignore_errors: True
